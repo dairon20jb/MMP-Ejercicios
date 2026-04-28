@@ -146,6 +146,39 @@ button.primary {
   font-size: 1.7rem;
 }
 
+.save-card {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  background: #132447;
+}
+
+.save-card label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.save-card input {
+  width: 100%;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  background: #0b1328;
+}
+
+.save-card button {
+  width: 100%;
+}
+
+#saveStatus {
+  margin: 8px 0 0;
+}
+
 .detail-list {
   margin-top: 10px;
   font-size: 0.95rem;
