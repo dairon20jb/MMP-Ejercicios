@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pausas Activas Web - Modo 6</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="camera-panel">
+        <div class="camera-header">
+          <h1>Pausas Activas - Home office 4x</h1>
+          <p>Modo 6: pinza + palma + pulgar-menique + OK sostenido</p>
+        </div>
+        <div class="video-wrap">
+          <video id="video" autoplay playsinline muted></video>
+          <canvas id="overlay"></canvas>
+        </div>
+        <div class="camera-actions">
+          <button id="startBtn" class="primary">Iniciar camara</button>
+          <button id="stopBtn">Detener</button>
+          <button id="resetBtn">Reiniciar sesion</button>
+        </div>
+      </section>
+
+      <aside class="stats-panel">
+        <h2>Panel de sesion</h2>
+        <p id="statusLine" class="muted">Estado: listo para iniciar</p>
+
+        <div class="metric-grid">
+          <article class="metric-card">
+            <span class="metric-label">Pinza (reps)</span>
+            <strong id="pinchCount">0</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Palma (reps)</span>
+            <strong id="palmCount">0</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Pulgar-menique (reps)</span>
+            <strong id="thumbPinkyCount">0</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">OK sostenido (reps)</span>
+            <strong id="okHoldCount">0</strong>
+          </article>
+        </div>
+
+        <div class="score-card">
+          <span class="metric-label">Puntaje sesion</span>
+          <strong id="scoreValue">0</strong>
+        </div>
+
+        <div class="detail-list">
+          <p><strong>Pinza:</strong> <span id="pinchDetail">-</span></p>
+          <p><strong>Palma:</strong> <span id="palmDetail">-</span></p>
+          <p><strong>Pulgar-menique:</strong> <span id="thumbPinkyDetail">-</span></p>
+          <p><strong>OK sostenido:</strong> <span id="okHoldDetail">-</span></p>
+        </div>
+
+        <hr />
+        <p class="muted small">
+          Tip: para contar OK sostenido, mantén la pinza pulgar-indice al menos 1.0 s y luego suelta.
+        </p>
+      </aside>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pasos para publicar en Vercel</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      main {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+      h1, h2 {
+        margin: 0 0 12px;
+      }
+      section {
+        background: #111c37;
+        border: 1px solid #25365f;
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 14px;
+      }
+      code {
+        background: #0b1328;
+        border: 1px solid #2a3d6c;
+        border-radius: 6px;
+        padding: 2px 6px;
+      }
+      li { margin: 7px 0; }
+      .muted { color: #9fb0d5; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Publicar Pausas Activas en Vercel</h1>
+      <p class="muted">
+        Proyecto: <code>CAPACITACIONES VIRTUALES/pausas-activas-web-vercel</code>
+      </p>
+
+      <section>
+        <h2>1) Requisitos previos</h2>
+        <ul>
+          <li>Tener cuenta en <a href="https://vercel.com/" target="_blank" rel="noreferrer">Vercel</a>.</li>
+          <li>(Opcional) Tener cuenta en GitHub para despliegue automático.</li>
+          <li>Usar navegador con permisos de cámara y HTTPS.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>2) Opción A (rápida): drag and drop</h2>
+        <ol>
+          <li>Comprime la carpeta <code>pausas-activas-web-vercel</code> en un .zip.</li>
+          <li>Entra a Vercel y crea un proyecto nuevo.</li>
+          <li>Arrastra el .zip o la carpeta según la interfaz de Vercel.</li>
+          <li>Publica con la configuración por defecto (sitio estático).</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>3) Opción B: con GitHub (recomendada)</h2>
+        <ol>
+          <li>Sube esta carpeta a un repositorio.</li>
+          <li>En Vercel: <code>Add New Project</code> y conecta el repo.</li>
+          <li>Framework preset: <code>Other</code> (sitio estático).</li>
+          <li>
+            Si el repo tiene más carpetas, define <code>Root Directory</code> como:
+            <code>CAPACITACIONES VIRTUALES/pausas-activas-web-vercel</code>.
+          </li>
+          <li>Deploy.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>4) Validación post-deploy</h2>
+        <ol>
+          <li>Abre la URL pública y pulsa <code>Iniciar camara</code>.</li>
+          <li>Acepta permisos de cámara del navegador.</li>
+          <li>Verifica que cambie a <code>Estado: deteccion activa</code> al mostrar la mano.</li>
+          <li>Comprueba que suben los contadores de los 4 ejercicios.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>5) Problemas frecuentes y solución</h2>
+        <ul>
+          <li><strong>No abre cámara:</strong> revisa permisos del sitio y que no esté ocupada por Zoom/Meet.</li>
+          <li><strong>No detecta mano:</strong> mejora luz, acerca la mano y evita fondo muy oscuro.</li>
+          <li><strong>No cuenta OK sostenido:</strong> mantén pinza pulgar-índice al menos 1.0 s y luego suelta.</li>
+          <li><strong>Carga lenta inicial:</strong> normal, el modelo se descarga la primera vez.</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
