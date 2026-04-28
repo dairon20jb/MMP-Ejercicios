@@ -146,6 +146,92 @@ button.primary {
   font-size: 1.7rem;
 }
 
+.achievement-card {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  background: #10213f;
+}
+
+.achievement-card h3 {
+  margin: 4px 0;
+  font-size: 1.15rem;
+  color: var(--accent);
+}
+
+.progress-track {
+  height: 12px;
+  margin-top: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #091225;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--ok));
+  transition: width 0.25s ease;
+}
+
+#achievementProgressText {
+  margin: 8px 0;
+  color: var(--ok);
+}
+
+.achievement-list {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.achievement-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid #223760;
+  border-radius: 8px;
+  padding: 8px;
+  color: var(--muted);
+  background: #0d1a33;
+}
+
+.achievement-list li.active {
+  border-color: #2c82bc;
+  color: var(--text);
+  background: #142a4d;
+}
+
+.achievement-list li.completed {
+  border-color: #327b55;
+  color: var(--ok);
+  background: #102d25;
+}
+
+.achievement-list li.locked {
+  opacity: 0.72;
+}
+
+.achievement-list strong {
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.completion-message {
+  margin: 12px 0 0;
+  border: 1px solid #327b55;
+  border-radius: 10px;
+  padding: 10px;
+  color: var(--ok);
+  background: #102d25;
+  font-weight: 700;
+}
+
 .save-card {
   margin-top: 10px;
   border: 1px solid var(--line);
