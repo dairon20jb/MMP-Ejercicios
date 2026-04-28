@@ -1,8 +1,4 @@
-import {
-  FilesetResolver,
-  HandLandmarker,
-} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm";
-
+const MEDIAPIPE_VERSION = "0.10.21";
 const PINCH_OPEN_T = 0.09;
 const PINCH_CLOSE_T = 0.045;
 const PALM_OPEN_T = 1.34;
@@ -33,6 +29,7 @@ const okHoldDetailEl = document.getElementById("okHoldDetail");
 
 let stream = null;
 let handLandmarker = null;
+let mediaPipeTasksPromise = null;
 let running = false;
 let rafId = null;
 
@@ -102,6 +99,34 @@ function renderStats(details) {
   thumbPinkyDetailEl.textContent =
     details.thumbPinkyDistance == null ? "-" : details.thumbPinkyDistance.toFixed(3);
   okHoldDetailEl.textContent = `${details.okHoldSecs.toFixed(1)} s`;
+}
+
+async function loadMediaPipeTasks() {
+  if (!mediaPipeTasksPromise) {
+    mediaPipeTasksPromise = import(
+      `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/+esm`
+    ).catch((err) => {
+      mediaPipeTasksPromise = null;
+      throw err;
+    });
+  }
+  return mediaPipeTasksPromise;
+}
+
+function cameraStartErrorMessage(err) {
+  if (!window.isSecureContext) {
+    return "Estado: la camara requiere HTTPS. Abre la URL https de Vercel.";
+  }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    return "Estado: este navegador no permite usar camara desde esta pagina.";
+  }
+  if (err?.name === "NotAllowedError") {
+    return "Estado: permiso de camara bloqueado. Autoriza la camara en el navegador.";
+  }
+  if (err?.name === "NotFoundError") {
+    return "Estado: no se encontro una camara disponible.";
+  }
+  return `Estado: error al iniciar camara/modelo: ${err?.message || "revisa permisos del navegador."}`;
 }
 
 function drawHands(result) {
@@ -203,8 +228,9 @@ async function ensureLandmarker() {
   if (handLandmarker) return handLandmarker;
 
   statusLine.textContent = "Estado: cargando modelo de manos...";
+  const { FilesetResolver, HandLandmarker } = await loadMediaPipeTasks();
   const vision = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
+    `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/wasm`
   );
   handLandmarker = await HandLandmarker.createFromOptions(vision, {
     baseOptions: {
@@ -222,7 +248,10 @@ async function ensureLandmarker() {
 
 async function startCamera() {
   if (running) return;
+  startBtn.disabled = true;
+  startBtn.textContent = "Iniciando...";
   try {
+    statusLine.textContent = "Estado: preparando camara...";
     await ensureLandmarker();
     stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -239,8 +268,10 @@ async function startCamera() {
     loop();
   } catch (err) {
     console.error(err);
-    statusLine.textContent =
-      "Estado: error al iniciar camara/modelo. Revisa permisos del navegador.";
+    statusLine.textContent = cameraStartErrorMessage(err);
+  } finally {
+    startBtn.disabled = false;
+    startBtn.textContent = "Iniciar camara";
   }
 }
 
