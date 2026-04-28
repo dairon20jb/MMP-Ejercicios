@@ -11,7 +11,7 @@
       <section class="camera-panel">
         <div class="camera-header">
           <h1>Pausas Activas - Home office 4x</h1>
-          <p>Modo 6: pinza + palma + pulgar-menique + OK sostenido</p>
+          <p>Modo logros: palma + pinza + pulgar-menique + OK sostenido</p>
         </div>
         <div class="video-wrap">
           <video id="video" autoplay playsinline muted></video>
@@ -52,6 +52,22 @@
           <strong id="scoreValue">0</strong>
         </div>
 
+        <div class="achievement-card">
+          <span class="metric-label">Logro actual</span>
+          <h3 id="achievementTitle">Palma cerrada</h3>
+          <p id="achievementInstruction" class="muted small">
+            Cierra la palma 15 veces para desbloquear el siguiente logro.
+          </p>
+          <div class="progress-track" aria-label="Avance del logro actual">
+            <div id="achievementProgressBar" class="progress-bar"></div>
+          </div>
+          <p id="achievementProgressText" class="small">0 / 15 completadas</p>
+          <ol id="achievementList" class="achievement-list"></ol>
+          <p id="completionMessage" class="completion-message" hidden>
+            Felicitaciones, completaste todos los logros.
+          </p>
+        </div>
+
         <div class="save-card">
           <label for="participantName">Nombre del participante</label>
           <input
@@ -59,6 +75,13 @@
             type="text"
             autocomplete="name"
             placeholder="Escribe tu nombre"
+          />
+          <label for="companyName">Nombre de la empresa</label>
+          <input
+            id="companyName"
+            type="text"
+            autocomplete="organization"
+            placeholder="Escribe la empresa"
           />
           <button id="saveResultBtn" class="primary">Guardar resultado</button>
           <p id="saveStatus" class="muted small">Resultado pendiente por guardar.</p>
