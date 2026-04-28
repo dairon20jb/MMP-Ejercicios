@@ -1,4 +1,6 @@
 const MEDIAPIPE_VERSION = "0.10.21";
+const RESULTS_ENDPOINT =
+  "https://script.google.com/a/macros/mmpprocesos.com/s/AKfycbwiEmaqaAKbb_8YPQK9GWL5Z4H8SpWOlcKnk_qc_E65TrT6plFHjD7qE3sy9a43qePaKw/exec";
 const PINCH_OPEN_T = 0.09;
 const PINCH_CLOSE_T = 0.045;
 const PALM_OPEN_T = 1.34;
@@ -14,8 +16,11 @@ const ctx = canvasEl.getContext("2d");
 const startBtn = document.getElementById("startBtn");
 const stopBtn = document.getElementById("stopBtn");
 const resetBtn = document.getElementById("resetBtn");
+const saveResultBtn = document.getElementById("saveResultBtn");
 
 const statusLine = document.getElementById("statusLine");
+const participantNameEl = document.getElementById("participantName");
+const saveStatusEl = document.getElementById("saveStatus");
 const pinchCountEl = document.getElementById("pinchCount");
 const palmCountEl = document.getElementById("palmCount");
 const thumbPinkyCountEl = document.getElementById("thumbPinkyCount");
@@ -77,6 +82,7 @@ function resetSession() {
   state.thumbPinkyStage = "open";
   state.okHoldActiveSince = null;
   state.okHoldLatched = false;
+  saveStatusEl.textContent = "Resultado pendiente por guardar.";
   renderStats({
     pinchDistance: null,
     palmRatio: null,
@@ -127,6 +133,47 @@ function cameraStartErrorMessage(err) {
     return "Estado: no se encontro una camara disponible.";
   }
   return `Estado: error al iniciar camara/modelo: ${err?.message || "revisa permisos del navegador."}`;
+}
+
+async function saveResult() {
+  const nombre = participantNameEl.value.trim();
+  if (!nombre) {
+    saveStatusEl.textContent = "Escribe el nombre antes de guardar.";
+    participantNameEl.focus();
+    return;
+  }
+
+  saveResultBtn.disabled = true;
+  saveResultBtn.textContent = "Guardando...";
+  saveStatusEl.textContent = "Enviando resultado...";
+
+  const payload = {
+    fecha: new Date().toISOString(),
+    nombre,
+    pinza: state.pinchCount,
+    palma: state.palmCount,
+    pulgarMenique: state.thumbPinkyCount,
+    okSostenido: state.okHoldCount,
+    puntaje: scoreSession(),
+  };
+
+  try {
+    await fetch(RESULTS_ENDPOINT, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8",
+      },
+      body: JSON.stringify(payload),
+    });
+    saveStatusEl.textContent = "Resultado enviado. Revisa la hoja de calculo.";
+  } catch (err) {
+    console.error(err);
+    saveStatusEl.textContent = "No se pudo enviar el resultado. Revisa conexion o Apps Script.";
+  } finally {
+    saveResultBtn.disabled = false;
+    saveResultBtn.textContent = "Guardar resultado";
+  }
 }
 
 function drawHands(result) {
@@ -320,6 +367,7 @@ function loop() {
 startBtn.addEventListener("click", startCamera);
 stopBtn.addEventListener("click", stopCamera);
 resetBtn.addEventListener("click", resetSession);
+saveResultBtn.addEventListener("click", saveResult);
 
 window.addEventListener("beforeunload", stopCamera);
 resetSession();
