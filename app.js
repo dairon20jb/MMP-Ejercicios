@@ -1,6 +1,32 @@
 const MEDIAPIPE_VERSION = "0.10.21";
 const RESULTS_ENDPOINT =
   "https://script.google.com/a/macros/mmpprocesos.com/s/AKfycbwiEmaqaAKbb_8YPQK9GWL5Z4H8SpWOlcKnk_qc_E65TrT6plFHjD7qE3sy9a43qePaKw/exec";
+const ACHIEVEMENTS = [
+  {
+    key: "palm",
+    label: "Palma cerrada",
+    target: 15,
+    instruction: "Cierra la palma 15 veces para desbloquear el siguiente logro.",
+  },
+  {
+    key: "pinch",
+    label: "Pinza",
+    target: 15,
+    instruction: "Une pulgar e indice 15 veces para desbloquear el siguiente logro.",
+  },
+  {
+    key: "thumbPinky",
+    label: "Pulgar-menique",
+    target: 15,
+    instruction: "Une pulgar y menique 15 veces para desbloquear el siguiente logro.",
+  },
+  {
+    key: "okHold",
+    label: "OK sostenido",
+    target: 5,
+    instruction: "Mantén la pinza pulgar-indice 1 segundo y suelta. Repite 5 veces.",
+  },
+];
 const PINCH_OPEN_T = 0.09;
 const PINCH_CLOSE_T = 0.045;
 const PALM_OPEN_T = 1.34;
@@ -20,7 +46,14 @@ const saveResultBtn = document.getElementById("saveResultBtn");
 
 const statusLine = document.getElementById("statusLine");
 const participantNameEl = document.getElementById("participantName");
+const companyNameEl = document.getElementById("companyName");
 const saveStatusEl = document.getElementById("saveStatus");
+const achievementTitleEl = document.getElementById("achievementTitle");
+const achievementInstructionEl = document.getElementById("achievementInstruction");
+const achievementProgressBarEl = document.getElementById("achievementProgressBar");
+const achievementProgressTextEl = document.getElementById("achievementProgressText");
+const achievementListEl = document.getElementById("achievementList");
+const completionMessageEl = document.getElementById("completionMessage");
 const pinchCountEl = document.getElementById("pinchCount");
 const palmCountEl = document.getElementById("palmCount");
 const thumbPinkyCountEl = document.getElementById("thumbPinkyCount");
@@ -48,6 +81,8 @@ const state = {
   thumbPinkyStage: "open",
   okHoldActiveSince: null,
   okHoldLatched: false,
+  activeAchievementIndex: 0,
+  savedResult: false,
 };
 
 function dist2d(a, b) {
@@ -72,6 +107,40 @@ function scoreSession() {
   );
 }
 
+function currentAchievement() {
+  return ACHIEVEMENTS[state.activeAchievementIndex] || null;
+}
+
+function countForAchievement(key) {
+  if (key === "palm") return state.palmCount;
+  if (key === "pinch") return state.pinchCount;
+  if (key === "thumbPinky") return state.thumbPinkyCount;
+  if (key === "okHold") return state.okHoldCount;
+  return 0;
+}
+
+function sessionComplete() {
+  return state.activeAchievementIndex >= ACHIEVEMENTS.length;
+}
+
+function completeActiveAchievementIfNeeded() {
+  const achievement = currentAchievement();
+  if (!achievement || countForAchievement(achievement.key) < achievement.target) {
+    return;
+  }
+
+  state.activeAchievementIndex += 1;
+  state.pinchStage = "closed";
+  state.palmStage = "closed";
+  state.thumbPinkyStage = "closed";
+  state.okHoldActiveSince = null;
+  state.okHoldLatched = false;
+
+  if (sessionComplete()) {
+    statusLine.textContent = "Estado: felicitaciones, completaste todos los logros.";
+  }
+}
+
 function resetSession() {
   state.pinchCount = 0;
   state.palmCount = 0;
@@ -82,6 +151,10 @@ function resetSession() {
   state.thumbPinkyStage = "open";
   state.okHoldActiveSince = null;
   state.okHoldLatched = false;
+  state.activeAchievementIndex = 0;
+  state.savedResult = false;
+  saveResultBtn.disabled = false;
+  saveResultBtn.textContent = "Guardar resultado";
   saveStatusEl.textContent = "Resultado pendiente por guardar.";
   renderStats({
     pinchDistance: null,
@@ -89,6 +162,7 @@ function resetSession() {
     thumbPinkyDistance: null,
     okHoldSecs: 0,
   });
+  renderAchievements();
 }
 
 function renderStats(details) {
@@ -105,6 +179,47 @@ function renderStats(details) {
   thumbPinkyDetailEl.textContent =
     details.thumbPinkyDistance == null ? "-" : details.thumbPinkyDistance.toFixed(3);
   okHoldDetailEl.textContent = `${details.okHoldSecs.toFixed(1)} s`;
+}
+
+function renderAchievements() {
+  const achievement = currentAchievement();
+  const completedCount = Math.min(state.activeAchievementIndex, ACHIEVEMENTS.length);
+  const totalCount = ACHIEVEMENTS.length;
+
+  achievementListEl.innerHTML = ACHIEVEMENTS.map((item, index) => {
+    let className = "";
+    let status = `${Math.min(countForAchievement(item.key), item.target)} / ${item.target}`;
+
+    if (index < state.activeAchievementIndex) {
+      className = "completed";
+      status = "Completado";
+    } else if (index === state.activeAchievementIndex) {
+      className = "active";
+    } else {
+      className = "locked";
+      status = "Pendiente";
+    }
+
+    return `<li class="${className}"><span>${item.label}</span><strong>${status}</strong></li>`;
+  }).join("");
+
+  if (!achievement) {
+    achievementTitleEl.textContent = "Todos los logros completados";
+    achievementInstructionEl.textContent = "Ya puedes guardar tu resultado final.";
+    achievementProgressBarEl.style.width = "100%";
+    achievementProgressTextEl.textContent = `${totalCount} / ${totalCount} logros completados`;
+    completionMessageEl.hidden = false;
+    return;
+  }
+
+  const currentCount = Math.min(countForAchievement(achievement.key), achievement.target);
+  const progress = Math.round((currentCount / achievement.target) * 100);
+  achievementTitleEl.textContent = achievement.label;
+  achievementInstructionEl.textContent = achievement.instruction;
+  achievementProgressBarEl.style.width = `${progress}%`;
+  achievementProgressTextEl.textContent =
+    `${currentCount} / ${achievement.target} completadas (${completedCount} / ${totalCount} logros)`;
+  completionMessageEl.hidden = true;
 }
 
 async function loadMediaPipeTasks() {
@@ -136,10 +251,24 @@ function cameraStartErrorMessage(err) {
 }
 
 async function saveResult() {
+  if (state.savedResult) {
+    return;
+  }
+
   const nombre = participantNameEl.value.trim();
+  const empresa = companyNameEl.value.trim();
   if (!nombre) {
     saveStatusEl.textContent = "Escribe el nombre antes de guardar.";
     participantNameEl.focus();
+    return;
+  }
+  if (!empresa) {
+    saveStatusEl.textContent = "Escribe la empresa antes de guardar.";
+    companyNameEl.focus();
+    return;
+  }
+  if (!sessionComplete()) {
+    saveStatusEl.textContent = "Completa todos los logros antes de guardar.";
     return;
   }
 
@@ -150,6 +279,7 @@ async function saveResult() {
   const payload = {
     fecha: new Date().toISOString(),
     nombre,
+    empresa,
     pinza: state.pinchCount,
     palma: state.palmCount,
     pulgarMenique: state.thumbPinkyCount,
@@ -166,13 +296,18 @@ async function saveResult() {
       },
       body: JSON.stringify(payload),
     });
+    state.savedResult = true;
     saveStatusEl.textContent = "Resultado enviado. Revisa la hoja de calculo.";
   } catch (err) {
     console.error(err);
     saveStatusEl.textContent = "No se pudo enviar el resultado. Revisa conexion o Apps Script.";
-  } finally {
     saveResultBtn.disabled = false;
     saveResultBtn.textContent = "Guardar resultado";
+  } finally {
+    if (state.savedResult) {
+      saveResultBtn.disabled = true;
+      saveResultBtn.textContent = "Resultado guardado";
+    }
   }
 }
 
@@ -217,6 +352,8 @@ function drawHands(result) {
 }
 
 function processMode6(handLms, nowMs) {
+  const achievement = currentAchievement();
+  const activeKey = achievement?.key;
   const thumb = handLms[4];
   const index = handLms[8];
   const pinky = handLms[20];
@@ -225,35 +362,47 @@ function processMode6(handLms, nowMs) {
   const thumbPinkyDistance = dist2d(pinky, thumb);
   const palmRatio = palmOpenRatio(handLms);
 
-  if (pinchDistance > PINCH_OPEN_T) {
+  if (activeKey === "pinch" && pinchDistance > PINCH_OPEN_T) {
     state.pinchStage = "open";
   }
-  if (pinchDistance < PINCH_CLOSE_T && state.pinchStage === "open") {
+  if (
+    activeKey === "pinch" &&
+    pinchDistance < PINCH_CLOSE_T &&
+    state.pinchStage === "open"
+  ) {
     state.pinchStage = "closed";
     state.pinchCount += 1;
+    completeActiveAchievementIfNeeded();
   }
 
-  if (palmRatio > PALM_OPEN_T) {
+  if (activeKey === "palm" && palmRatio > PALM_OPEN_T) {
     state.palmStage = "open";
   }
-  if (palmRatio < PALM_CLOSE_T && state.palmStage === "open") {
+  if (
+    activeKey === "palm" &&
+    palmRatio < PALM_CLOSE_T &&
+    state.palmStage === "open"
+  ) {
     state.palmStage = "closed";
     state.palmCount += 1;
+    completeActiveAchievementIfNeeded();
   }
 
-  if (thumbPinkyDistance > THUMB_PINKY_OPEN_T) {
+  if (activeKey === "thumbPinky" && thumbPinkyDistance > THUMB_PINKY_OPEN_T) {
     state.thumbPinkyStage = "open";
   }
   if (
+    activeKey === "thumbPinky" &&
     thumbPinkyDistance < THUMB_PINKY_CLOSE_T &&
     state.thumbPinkyStage === "open"
   ) {
     state.thumbPinkyStage = "closed";
     state.thumbPinkyCount += 1;
+    completeActiveAchievementIfNeeded();
   }
 
   let okHoldSecs = 0;
-  if (pinchDistance < PINCH_CLOSE_T) {
+  if (activeKey === "okHold" && pinchDistance < PINCH_CLOSE_T) {
     if (state.okHoldActiveSince == null) {
       state.okHoldActiveSince = nowMs;
     }
@@ -261,6 +410,7 @@ function processMode6(handLms, nowMs) {
     if (okHoldSecs >= OK_HOLD_SECONDS && !state.okHoldLatched) {
       state.okHoldCount += 1;
       state.okHoldLatched = true;
+      completeActiveAchievementIfNeeded();
     }
   } else {
     state.okHoldActiveSince = null;
@@ -354,13 +504,20 @@ function loop() {
   };
   if (result.landmarks && result.landmarks.length > 0) {
     details = processMode6(result.landmarks[0], nowMs);
-    statusLine.textContent = "Estado: deteccion activa (modo 6).";
+    if (sessionComplete()) {
+      statusLine.textContent = "Estado: felicitaciones, completaste todos los logros.";
+    } else {
+      statusLine.textContent = `Estado: logro activo - ${currentAchievement().label}.`;
+    }
   } else {
-    statusLine.textContent = "Estado: sin mano detectada.";
+    statusLine.textContent = sessionComplete()
+      ? "Estado: felicitaciones, completaste todos los logros."
+      : "Estado: sin mano detectada.";
     state.okHoldActiveSince = null;
     state.okHoldLatched = false;
   }
   renderStats(details);
+  renderAchievements();
   rafId = requestAnimationFrame(loop);
 }
 
@@ -371,3 +528,4 @@ saveResultBtn.addEventListener("click", saveResult);
 
 window.addEventListener("beforeunload", stopCamera);
 resetSession();
+
